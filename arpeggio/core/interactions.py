@@ -59,6 +59,9 @@ class InteractionComplex:
             else:
                 self.s_atoms.append(atom)
 
+        #LEWIS
+        self.s_atoms = sorted(self.s_atoms, key=lambda atom: atom.get_serial_number())
+
         # obabel data
         self.ob_mol = self._read_openbabel(filename)
 
@@ -67,7 +70,7 @@ class InteractionComplex:
         self.bio_to_ob = {}  # biopython to openbabel atom mapping
 
         # chem_comp_type info
-        self.component_types = protein_reader.get_component_types(filename)
+        #self.component_types = protein_reader.get_component_types(filename)
 
         # helper structures
         self.selection = []
@@ -93,7 +96,18 @@ class InteractionComplex:
             has_hydrogens=any((x.element == 'H') or (x.element == 'D') for x in self.s_atoms),
             ph=ph)
 
-        self._establish_structure_mappping()
+        #LEWIS:
+        #self._establish_structure_mappping()
+        self.ob_to_bio = dict(zip(
+            [i.GetId() for i in ob.OBMolAtomIter(self.ob_mol)],
+            self.s_atoms
+            )
+        )
+        self.bio_to_ob = dict(zip(
+            self.s_atoms,
+            [i.GetId() for i in ob.OBMolAtomIter(self.ob_mol)]
+            )
+        )
 
         if self.params.has_hydrogens:
             self.input_has_hydrogens = True
@@ -183,9 +197,9 @@ class InteractionComplex:
         for contact in self.atom_contacts:
             result_entry = {}
             result_entry['bgn'] = utils.make_pymol_json(contact.bgn_atom)
-            result_entry['bgn']['label_comp_type'] = self.component_types[utils.get_residue_name(contact.bgn_atom)]
+            #result_entry['bgn']['label_comp_type'] = self.component_types[utils.get_residue_name(contact.bgn_atom)]
             result_entry['end'] = utils.make_pymol_json(contact.end_atom)
-            result_entry['end']['label_comp_type'] = self.component_types[utils.get_residue_name(contact.end_atom)]
+            #result_entry['end']['label_comp_type'] = self.component_types[utils.get_residue_name(contact.end_atom)]
             result_entry['type'] = 'atom-atom'
             result_entry['distance'] = round(np.float64(contact.distance), 2)
             result_entry['contact'] = [k for k, v in zip(contacts, contact.sifts) if v == 1]
@@ -2074,10 +2088,10 @@ class InteractionComplex:
         """
         result_entry = {}
         result_entry['bgn'] = utils.make_pymol_json(contact.bgn_res)
-        result_entry['bgn']['label_comp_type'] = self.component_types[utils.get_residue_name(contact.bgn_res)]
+        #result_entry['bgn']['label_comp_type'] = self.component_types[utils.get_residue_name(contact.bgn_res)]
         result_entry['bgn']['auth_atom_id'] = reduce(lambda l, m: f'{l},{m}', contact.bgn_res_atoms)
         result_entry['end'] = utils.make_pymol_json(contact.end_res)
-        result_entry['end']['label_comp_type'] = self.component_types[utils.get_residue_name(contact.end_res)]
+        #result_entry['end']['label_comp_type'] = self.component_types[utils.get_residue_name(contact.end_res)]
         result_entry['end']['auth_atom_id'] = reduce(lambda l, m: f'{l},{m}', contact.end_res_atoms)
         result_entry['type'] = contact_type
         result_entry['distance'] = round(np.float64(contact.distance), 2)
@@ -2101,10 +2115,10 @@ class InteractionComplex:
         """
         result_entry = {}
         result_entry['bgn'] = utils.make_pymol_json(contact.bgn_atom)
-        result_entry['bgn']['label_comp_type'] = self.component_types[utils.get_residue_name(contact.bgn_atom)]
+        #result_entry['bgn']['label_comp_type'] = self.component_types[utils.get_residue_name(contact.bgn_atom)]
         result_entry['end'] = utils.make_pymol_json(contact.end_res)
         result_entry['end']['auth_atom_id'] = reduce(lambda l, m: f'{l},{m}', contact.end_res_atoms)
-        result_entry['end']['label_comp_type'] = self.component_types[utils.get_residue_name(contact.end_res)]
+        #result_entry['end']['label_comp_type'] = self.component_types[utils.get_residue_name(contact.end_res)]
         result_entry['type'] = contact_type
         result_entry['distance'] = round(np.float64(contact.distance), 2)
         result_entry['contact'] = contact.sifts
