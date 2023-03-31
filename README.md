@@ -1,3 +1,5 @@
+# ** THIS IS A FORK and doesn't even work yet **
+The intention is to adapt this to 1) work with PDB files, 2) change the selection syntax, 3) eventually include SDF integration too, 4) possibly use prody instead of biopython, 5) use RDKit instead of openbabel
 
 # PDBe Arpeggio
 
